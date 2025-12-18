@@ -50,8 +50,8 @@
       const snapshot = await db
         .collection("posts")
         .where("status", "==", "pending")
-        .orderBy("createdAt", "desc")
         .get();
+
 
       container.innerHTML = "";
 
