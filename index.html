@@ -231,7 +231,6 @@ async function loadPosts() {
   const snapshot = await db
     .collection("posts")
     .where("status", "==", "published")
-    .orderBy("createdAt", "desc")
     .get();
 
   postsContainer.innerHTML = "";
