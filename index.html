@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master Blog</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Firebase SDKs (COMPAT for plain HTML sites) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #f4f4f4;
+      --card: #ffffff;
+      --text: #333;
+      --accent: #4f46e5;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e5e7eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: 0.3s;
+    }
+
+    header {
+      background: var(--card);
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    nav {
+      max-width: 1000px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav h1 {
+      font-family: 'Merriweather', serif;
+      font-size: 1.8rem;
+    }
+
+    nav button {
+      padding: 0.4rem 0.8rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+    }
+
+    .post, .editor {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .post h2 {
+      font-family: 'Merriweather', serif;
+      margin-bottom: 0.5rem;
+    }
+
+    .date {
+      font-size: 0.85rem;
+      color: gray;
+      margin-bottom: 1rem;
+    }
+
+    .editor h3 {
+      margin-bottom: 1rem;
+    }
+
+    .editor input, .editor textarea {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 0.7rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+    }
+
+    .editor button {
+      width: 100%;
+      padding: 0.6rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+    .fab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: var(--accent);
+        color: white;
+        font-size: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        transition: transform 0.2s;
+    }
+
+    .fab:hover {
+        transform: scale(1.1);
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <h1>Master Blog</h1>
+      <button id="themeBtn" onclick="toggleDark()">🌙 Dark Mode</button>
+
+    </nav>
+  </header>
+
+  <main class="container">
+    <section>
+      <article class="post">
+        <h2>Welcome to the Master Blog</h2>
+        <div class="date">December 2025</div>
+        <p>
+          This is a professional beginner-friendly blog with dark mode, editor,
+          responsive layout, and clean design.
+        </p>
+      </article>
+
+      <article class="post" id="posts"></article>
+    </section>
+
+  </main>
+
+  <footer>
+    © 2025 Master Blog · Built by Student & Master
+  </footer>
+
+  <script>
+  /* ---------- THEME (DARK MODE) ---------- */
+const themeBtn = document.getElementById("themeBtn");
+const savedTheme = localStorage.getItem("theme");
+
+if (savedTheme === "dark") {
+  document.body.classList.add("dark");
+  themeBtn.textContent = "☀️ Light Mode";
+}
+
+function toggleDark() {
+  const isDark = document.body.classList.toggle("dark");
+
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  themeBtn.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+
+  // ---------- POSTS ----------
+  const postsContainer = document.getElementById("posts");
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let editingIndex = null;
+
+  function renderPosts() {
+    postsContainer.innerHTML = "";
+
+    posts.forEach((post, index) => {
+      const article = document.createElement("article");
+      article.className = "post";
+
+      article.innerHTML = `
+        <h2>${post.title}</h2>
+        <div class="date">${post.date}</div>
+        <p>${post.content}</p>
+        <button onclick="editPost(${index})">Edit</button>
+        <button onclick="deletePost(${index})">Delete</button>
+      `;
+
+      postsContainer.appendChild(article);
+    });
+  }
+
+  function addPost() {
+    const title = document.getElementById("title").value.trim();
+    const content = document.getElementById("content").value.trim();
+
+    if (!title || !content) {
+      alert("Fill all fields");
+      return;
+    }
+
+    if (editingIndex !== null) {
+      posts[editingIndex] = {
+        ...posts[editingIndex],
+        title,
+        content,
+        date: new Date().toLocaleString() + " (edited)"
+      };
+      editingIndex = null;
+    } else {
+      posts.unshift({
+        title,
+        content,
+        date: new Date().toLocaleString()
+      });
+    }
+
+    localStorage.setItem("posts", JSON.stringify(posts));
+    renderPosts();
+
+    document.getElementById("title").value = "";
+    document.getElementById("content").value = "";
+  }
+
+  function editPost(index) {
+    const post = posts[index];
+    document.getElementById("title").value = post.title;
+    document.getElementById("content").value = post.content;
+    editingIndex = index;
+  }
+
+  function deletePost(index) {
+    if (!confirm("Delete this post?")) return;
+    posts.splice(index, 1);
+    localStorage.setItem("posts", JSON.stringify(posts));
+    renderPosts();
+  }
+
+  renderPosts();
+</script>
+
+<a href="new-post.html" class="fab">+</a>
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAekZadiPdthoDtw_MvMIO8OibIz3lqa0A",
+    authDomain: "master-blog-ce4e5.firebaseapp.com",
+    projectId: "master-blog-ce4e5",
+    storageBucket: "master-blog-ce4e5.appspot.com",
+    messagingSenderId: "920806401084",
+    appId: "1:920806401084:web:e43131880d62788e79cf39"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // Initialize Firestore
+  const db = firebase.firestore();
+
+  console.log("🔥 Firebase + Firestore connected");
+</script>
+
+
+</body>
+</html>
+
+
