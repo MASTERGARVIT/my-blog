@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Firebase SDKs (COMPAT for plain HTML sites) -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <meta name="description" content="Master Blog - personal vlog and blog sharing thoughts, ideas, and learning journey." />
+  <meta name="keywords" content="blog, vlog, personal blog, learning, tech" />
+  <meta name="author" content="Your Name" />
 
   <style>
     :root {
@@ -128,34 +128,34 @@
       font-size: 0.9rem;
       opacity: 0.8;
     }
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      background: var(--accent);
+      color: white;
+      font-size: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+    }
+
 
     @media (max-width: 768px) {
       .container {
         grid-template-columns: 1fr;
       }
     }
-    .fab {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        background: var(--accent);
-        color: white;
-        font-size: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        transition: transform 0.2s;
-    }
-
-    .fab:hover {
-        transform: scale(1.1);
-    }
-
   </style>
 </head>
 <body>
@@ -164,7 +164,6 @@
     <nav>
       <h1>Master Blog</h1>
       <button id="themeBtn" onclick="toggleDark()">🌙 Dark Mode</button>
-
     </nav>
   </header>
 
@@ -206,7 +205,7 @@ function toggleDark() {
 }
 
 
-  // ---------- POSTS ----------
+  /* ---------- POSTS (CRUD) ---------- */
   const postsContainer = document.getElementById("posts");
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
   let editingIndex = null;
@@ -217,7 +216,6 @@ function toggleDark() {
     posts.forEach((post, index) => {
       const article = document.createElement("article");
       article.className = "post";
-
       article.innerHTML = `
         <h2>${post.title}</h2>
         <div class="date">${post.date}</div>
@@ -225,14 +223,13 @@ function toggleDark() {
         <button onclick="editPost(${index})">Edit</button>
         <button onclick="deletePost(${index})">Delete</button>
       `;
-
       postsContainer.appendChild(article);
     });
   }
 
   function addPost() {
-    const title = document.getElementById("title").value.trim();
-    const content = document.getElementById("content").value.trim();
+    const title = document.getElementById("title").value;
+    const content = document.getElementById("content").value;
 
     if (!title || !content) {
       alert("Fill all fields");
@@ -241,7 +238,6 @@ function toggleDark() {
 
     if (editingIndex !== null) {
       posts[editingIndex] = {
-        ...posts[editingIndex],
         title,
         content,
         date: new Date().toLocaleString() + " (edited)"
@@ -263,9 +259,8 @@ function toggleDark() {
   }
 
   function editPost(index) {
-    const post = posts[index];
-    document.getElementById("title").value = post.title;
-    document.getElementById("content").value = post.content;
+    document.getElementById("title").value = posts[index].title;
+    document.getElementById("content").value = posts[index].content;
     editingIndex = index;
   }
 
@@ -278,30 +273,8 @@ function toggleDark() {
 
   renderPosts();
 </script>
-
 <a href="new-post.html" class="fab">+</a>
-<script>
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAekZadiPdthoDtw_MvMIO8OibIz3lqa0A",
-    authDomain: "master-blog-ce4e5.firebaseapp.com",
-    projectId: "master-blog-ce4e5",
-    storageBucket: "master-blog-ce4e5.appspot.com",
-    messagingSenderId: "920806401084",
-    appId: "1:920806401084:web:e43131880d62788e79cf39"
-  };
-
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-
-  // Initialize Firestore
-  const db = firebase.firestore();
-
-  console.log("🔥 Firebase + Firestore connected");
-</script>
 
 
 </body>
 </html>
-
-
