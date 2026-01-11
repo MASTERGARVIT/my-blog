@@ -66,7 +66,8 @@
     <button onclick="verifyOTP()">Verify OTP</button>
   </div>
   </div>
-
+  <div id="recaptcha-container"></div>
+  
 
   <div class="container">
     <h1>New Blog Post</h1>
@@ -77,6 +78,20 @@
     <button onclick="publishPost()">Publish</button>
     <p><a href="index.html">← Back to Home</a></p>
   </div>
+  <script>
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+    'recaptcha-container',
+    {
+      size: 'invisible',
+      callback: () => {
+        console.log("reCAPTCHA solved");
+      }
+    }
+  );
+
+  recaptchaVerifier.render();
+
+  </script>
   <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAekZadiPdthoDtw_MvMIO8OibIz3lqa0A",
@@ -99,32 +114,42 @@
      { size: "normal" }
    );
 
-   function sendOTP() {
-     const phone = document.getElementById("phone").value;
+  function sendOTP() {
+    const phone = document.getElementById("phone").value;
 
-     firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
-       .then(result => {
-         window.confirmationResult = result;
-         document.getElementById("otpBox").style.display = "block";
-         alert("OTP sent!");
-       })
-       .catch(error => {
-         alert(error.message);
-       });
-   }
+    if (!phone.startsWith("+")) {
+      alert("Use country code like +91...");
+      return;
+    }
 
-   function verifyOTP() {
-     const otp = document.getElementById("otp").value;
+    const appVerifier = window.recaptchaVerifier;
 
-     window.confirmationResult.confirm(otp)
-       .then(result => {
-         alert("Logged in as " + result.user.phoneNumber);
-         document.getElementById("authBox").style.display = "none";
-       })
-       .catch(() => {
-         alert("Wrong OTP");
-       });
-   }
+    firebase.auth().signInWithPhoneNumber(phone, appVerifier)
+      .then((confirmationResult) => {
+        window.confirmationResult = confirmationResult;
+        alert("OTP sent!");
+        document.getElementById("otpBox").style.display = "block";
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  }
+
+
+  function verifyOTP() {
+    const code = document.getElementById("otp").value;
+
+    confirmationResult.confirm(code)
+      .then((result) => {
+        alert("Login successful!");
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("editor").style.display = "block";
+      })
+      .catch((error) => {
+        alert("Wrong OTP");
+      });
+  }
+
   </script>
 
 
