@@ -54,6 +54,19 @@
   </style>
 </head>
 <body>
+  <div id="authBox" style="max-width:400px;margin:auto;text-align:center;">
+  <h3>Login to Publish</h3>
+
+  <input id="phone" placeholder="+91XXXXXXXXXX" style="padding:10px;width:100%;margin:5px">
+  <div id="recaptcha-container"></div>
+  <button onclick="sendOTP()">Send OTP</button>
+
+  <div id="otpBox" style="display:none;">
+    <input id="otp" placeholder="Enter OTP" style="padding:10px;width:100%;margin:5px">
+    <button onclick="verifyOTP()">Verify OTP</button>
+  </div>
+  </div>
+
 
   <div class="container">
     <h1>New Blog Post</h1>
@@ -75,8 +88,46 @@
   };
 
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+
+  const auth = firebase.auth();     // ← ADD
+  const db = firebase.firestore(); // ← keep
   </script>
+
+  <script>
+   window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+     "recaptcha-container",
+     { size: "normal" }
+   );
+
+   function sendOTP() {
+     const phone = document.getElementById("phone").value;
+
+     firebase.auth().signInWithPhoneNumber(phone, window.recaptchaVerifier)
+       .then(result => {
+         window.confirmationResult = result;
+         document.getElementById("otpBox").style.display = "block";
+         alert("OTP sent!");
+       })
+       .catch(error => {
+         alert(error.message);
+       });
+   }
+
+   function verifyOTP() {
+     const otp = document.getElementById("otp").value;
+
+     window.confirmationResult.confirm(otp)
+       .then(result => {
+         alert("Logged in as " + result.user.phoneNumber);
+         document.getElementById("authBox").style.display = "none";
+       })
+       .catch(() => {
+         alert("Wrong OTP");
+       });
+   }
+  </script>
+
+
 
 
   <script>
